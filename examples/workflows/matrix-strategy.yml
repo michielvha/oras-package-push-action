@@ -1,0 +1,57 @@
+name: Package Multiple Resources - Matrix Strategy
+on:
+  push:
+    branches: [main]
+
+permissions:
+  packages: write
+
+jobs:
+  # First job: Get the version once
+  gitversion:
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.gitversion.outputs.semver }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine Version
+        id: gitversion
+        uses: michielvha/gitversion-tag-action@main
+        with:
+          configFilePath: gitversion.yml
+          prefix: v
+
+  # Second job: Package multiple resources in parallel
+  package:
+    needs: gitversion
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        resource:
+          - name: s3
+            path: crossplane/s3/v1alpha1/*.yaml
+            desc: "Crossplane AWS S3 XRD and Composition"
+          - name: sqs
+            path: crossplane/sqs/v1alpha1/*.yaml
+            desc: "Crossplane AWS SQS XRD and Composition"
+          - name: rds
+            path: crossplane/rds/v1alpha1/*.yaml
+            desc: "Crossplane AWS RDS XRD and Composition"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Package ${{ matrix.resource.name }}
+        uses: ./actions/oras-package-push-action
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/crossplane-aws-${{ matrix.resource.name }}
+          source-path: ${{ matrix.resource.path }}
+          version: ${{ needs.gitversion.outputs.semver }}
+          additional-tags: latest,${{ github.sha }}
+          description: ${{ matrix.resource.desc }}

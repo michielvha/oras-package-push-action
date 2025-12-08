@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
 
       - name: Determine Version
-        id: version
+        id: gitversion
         uses: michielvha/gitversion-tag-action@main
         with:
           configFilePath: gitversion.yml
@@ -29,6 +29,6 @@ jobs:
           registry: ghcr.io
           repository: ${{ github.repository }}/test-manifests
           source-path: "manifests/**/*.yaml"
-          version: v${{ steps.version.outputs.semver }}
+          version: v${{ steps.gitversion.outputs.semver }}
           additional-tags: latest,${{ github.sha }}
-          description: "Test Manifests v${{ steps.version.outputs.semver }}"
+          description: "Test Manifests v${{ steps.gitversion.outputs.semver }}"
