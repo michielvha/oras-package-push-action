@@ -1,0 +1,24 @@
+name: Package with  ORAS Action - Basic
+on:
+  push:
+    branches: [main]
+
+permissions:
+  packages: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Package and Push Manifests
+        uses: ./actions/oras-package-push-action
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/my-manifests
+          source-path: "manifests/*.yaml"
+          version: v1.0.0
+          additional-tags: latest
+          description: "My Kubernetes manifests"

@@ -1,0 +1,4 @@
+# Ignore downloaded files during testing
+*.tar.gz
+oras-install/
+.crossplane/

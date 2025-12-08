@@ -1,0 +1,106 @@
+name: "ORAS Package and Push Action"
+description: "Package YAML manifests and push to OCI registry as artifacts with annotations and multi-tagging"
+author: "Michiel VH"
+
+branding:
+  icon: "package"
+  color: "blue"
+
+inputs:
+  registry:
+    description: "OCI registry URL (e.g., ghcr.io)"
+    required: true
+
+  repository:
+    description: "Repository name without registry (e.g., michielvha/crossplane-aws-s3)"
+    required: true
+
+  source-path:
+    description: "Path to manifests to package (supports glob patterns like *.yaml)"
+    required: true
+
+  version:
+    description: "Version tag (e.g., v1.0.0 or 1.0.0)"
+    required: true
+
+  additional-tags:
+    description: "Additional tags to apply (comma-separated, e.g., latest,sha-abc123)"
+    required: false
+    default: "latest"
+
+  description:
+    description: "Artifact description for OCI annotations"
+    required: false
+    default: ""
+
+  github-token:
+    description: "GitHub token for authentication to ghcr.io"
+    required: false
+    default: ${{ github.token }}
+
+  oras-version:
+    description: "ORAS CLI version to use"
+    required: false
+    default: "1.2.2"
+
+  working-directory:
+    description: "Working directory to run the action in"
+    required: false
+    default: "."
+
+outputs:
+  artifact-url:
+    description: "Full OCI artifact URL with primary version tag"
+    value: ${{ steps.push.outputs.artifact-url }}
+
+  digest:
+    description: "SHA256 digest of the pushed artifact"
+    value: ${{ steps.push.outputs.digest }}
+
+  all-tags:
+    description: "All tags applied to the artifact (JSON array)"
+    value: ${{ steps.push.outputs.all-tags }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup ORAS CLI
+      id: setup
+      shell: bash
+      env:
+        ORAS_VERSION: ${{ inputs.oras-version }}
+      run: |
+        echo "::group::Installing ORAS CLI v${ORAS_VERSION}"
+        bash ${{ github.action_path }}/scripts/setup-oras.sh
+        echo "::endgroup::"
+
+    - name: Login to Registry
+      id: login
+      shell: bash
+      env:
+        REGISTRY: ${{ inputs.registry }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        GITHUB_ACTOR: ${{ github.actor }}
+      run: |
+        echo "::group::Authenticating to ${REGISTRY}"
+        bash ${{ github.action_path }}/scripts/login.sh
+        echo "::endgroup::"
+
+    - name: Package and Push Artifact
+      id: push
+      shell: bash
+      env:
+        REGISTRY: ${{ inputs.registry }}
+        REPOSITORY: ${{ inputs.repository }}
+        SOURCE_PATH: ${{ inputs.source-path }}
+        VERSION: ${{ inputs.version }}
+        ADDITIONAL_TAGS: ${{ inputs.additional-tags }}
+        DESCRIPTION: ${{ inputs.description }}
+        WORKING_DIR: ${{ inputs.working-directory }}
+        GITHUB_SERVER_URL: ${{ github.server_url }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+      run: |
+        echo "::group::Packaging and Pushing OCI Artifact"
+        bash ${{ github.action_path }}/scripts/package-push.sh
+        echo "::endgroup::"

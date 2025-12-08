@@ -1,0 +1,34 @@
+name: Package with ORAS Action - GitVersion Integration
+on:
+  push:
+    branches: [main]
+
+permissions:
+  packages: write
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Determine Version
+        id: version
+        uses: michielvha/gitversion-tag-action@main
+        with:
+          configFilePath: gitversion.yml
+          prefix: v
+
+      - name: Package and Push
+        uses: ./actions/oras-package-push-action
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/test-manifests
+          source-path: "manifests/**/*.yaml"
+          version: v${{ steps.version.outputs.semver }}
+          additional-tags: latest,${{ github.sha }}
+          description: "Test Manifests v${{ steps.version.outputs.semver }}"

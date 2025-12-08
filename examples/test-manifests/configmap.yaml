@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+  namespace: crossplane-system
+data:
+  app.name: "test-app"
+  environment: "testing"
+  feature.flags: "enabled"

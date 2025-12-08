@@ -1,0 +1,13 @@
+apiVersion: storage.platform.com/v1alpha1
+kind: PlatformBucket
+metadata:
+  name: test-bucket
+  namespace: crossplane-system
+spec:
+  bucketName: test-app-bucket
+  enableAccessLogging: true
+  logBucketName: platform-logs
+  softDeleteRetentionDays: 30
+  kaluza:
+    environment: test
+    permissions: ReadWrite
