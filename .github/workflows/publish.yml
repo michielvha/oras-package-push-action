@@ -1,0 +1,47 @@
+name: Publish to Marketplace
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "scripts/**/*.sh"
+            - "action.yml"
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        name: Create Release and Publish
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - name: Tag the repo
+              id: gitversion
+              uses: michielvha/gitversion-tag-action@main
+              with:
+                  configFilePath: gitversion.yml
+                  prefix: "v"
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: v${{ steps.gitversion.outputs.semVer }}
+                  name: Release v${{ steps.gitversion.outputs.semVer }}
+                  body: |
+                      ## What's Changed
+
+                      This release includes updates to the ORAS Package Push Action.
+
+                      Use SHA: ${{ github.sha }} to ensure immutability.
+
+                      See the full commit history for details.
+                  draft: false
+                  prerelease: false
+                  generate_release_notes: true

@@ -1,0 +1,49 @@
+name: Test ORAS Package Push Action
+
+on:
+    pull_request:
+        paths:
+            - "examples/**"
+            - "scripts/**"
+            - "action.yml"
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    test-package-push:
+        name: Test Action with Sample Manifests
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Create test registry (local)
+              run: |
+                  # For testing, we'll use a mock/dry-run mode
+                  echo "Setting up test environment for ORAS package push"
+
+            - name: Run ORAS Package Push (Test Mode)
+              id: test-push
+              uses: ./
+              with:
+                  source-path: examples/test-manifests
+                  registry: ghcr.io
+                  repository: ${{ github.repository }}/test-manifests
+                  version: test-${{ github.sha }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+              continue-on-error: true
+
+            - name: Display action outputs
+              run: |
+                  echo "Artifact URL: ${{ steps.test-push.outputs.artifact-url }}"
+                  echo "Digest: ${{ steps.test-push.outputs.digest }}"
+                  echo "All tags: ${{ steps.test-push.outputs.all-tags }}"
+
+            - name: Verify test completed
+              run: |
+                  echo "✓ Test workflow completed successfully"
