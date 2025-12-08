@@ -1,4 +1,5 @@
 #!/bin/bash
+# !! Script is no longer used, we use the native action. !!
 set -euo pipefail
 
 # Install ORAS CLI

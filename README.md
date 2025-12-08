@@ -4,7 +4,7 @@ A GitHub Action that packages YAML manifests and pushes them to OCI registries a
 
 ## Features
 
-- ✅ **Automatic ORAS CLI installation** - No manual setup required
+- ✅ **Official ORAS CLI setup** - Uses oras-project/setup-oras GitHub Action
 - ✅ **Multi-tagging support** - Tag with version, SHA, latest, etc.
 - ✅ **OCI annotations** - Proper metadata for artifact discovery
 - ✅ **Glob patterns** - Package multiple files easily
