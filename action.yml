@@ -65,7 +65,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup ORAS CLI
-      uses: oras-project/setup-oras@v1
+      uses: oras-project/setup-oras@v2
       with:
         version: ${{ inputs.oras-version }}
 
